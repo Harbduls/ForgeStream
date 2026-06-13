@@ -128,6 +128,145 @@ mod test {
     use soroban_sdk::{testutils::Address as _, Env};
 
     #[test]
+    fn test_escrow_creation() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        let escrow_id2 = client.create_escrow(&buyer, &seller, &2000, &(deadline + 500));
+
+        assert_eq!(escrow_id, 1);
+        assert_eq!(escrow_id2, 2);
+
+        let escrow1 = client.get_escrow(&escrow_id);
+        assert_eq!(escrow1.buyer, buyer);
+        assert_eq!(escrow1.seller, seller);
+        assert_eq!(escrow1.amount, 1000);
+        assert_eq!(escrow1.is_funded, false);
+        assert_eq!(escrow1.is_released, false);
+        assert_eq!(escrow1.is_refunded, false);
+
+        let escrow2 = client.get_escrow(&escrow_id2);
+        assert_eq!(escrow2.amount, 2000);
+
+        let all_escrows = client.get_all_escrows();
+        assert_eq!(all_escrows.len(), 2);
+    }
+
+    #[test]
+    fn test_successful_release() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        client.deposit_funds(&escrow_id);
+        client.release_funds(&escrow_id);
+
+        let escrow = client.get_escrow(&escrow_id);
+        assert_eq!(escrow.is_funded, true);
+        assert_eq!(escrow.is_released, true);
+        assert_eq!(escrow.is_refunded, false);
+    }
+
+    #[test]
+    fn test_refund_scenario() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        client.deposit_funds(&escrow_id);
+
+        env.ledger().set_timestamp(deadline + 1);
+        client.refund_funds(&escrow_id);
+
+        let escrow = client.get_escrow(&escrow_id);
+        assert_eq!(escrow.is_funded, true);
+        assert_eq!(escrow.is_released, false);
+        assert_eq!(escrow.is_refunded, true);
+    }
+
+    #[test]
+    #[should_panic(expected = "Escrow not found")]
+    fn test_invalid_escrow_id() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+        client.get_escrow(&999);
+    }
+
+    #[test]
+    #[should_panic(expected = "Escrow already funded")]
+    fn test_deposit_already_funded() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        client.deposit_funds(&escrow_id);
+        client.deposit_funds(&escrow_id);
+    }
+
+    #[test]
+    #[should_panic(expected = "Escrow not funded")]
+    fn test_release_unfunded() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        client.release_funds(&escrow_id);
+    }
+
+    #[test]
+    #[should_panic(expected = "Escrow already completed")]
+    fn test_release_after_refund() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        client.deposit_funds(&escrow_id);
+        env.ledger().set_timestamp(deadline + 1);
+        client.refund_funds(&escrow_id);
+        client.release_funds(&escrow_id);
+    }
+
+    #[test]
+    #[should_panic(expected = "Deadline not reached yet")]
+    fn test_refund_before_deadline() {
+        let env = Env::default();
+        let contract_id = env.register_contract(None, EscrowContract);
+        let client = EscrowContractClient::new(&env, &contract_id);
+        let buyer = Address::generate(&env);
+        let seller = Address::generate(&env);
+        let deadline = env.ledger().timestamp() + 1000;
+        let escrow_id = client.create_escrow(&buyer, &seller, &1000, &deadline);
+        client.deposit_funds(&escrow_id);
+        client.refund_funds(&escrow_id);
+    }
+
+    #[test]
     fn test_escrow_workflow() {
         let env = Env::default();
         let contract_id = env.register_contract(None, EscrowContract);
