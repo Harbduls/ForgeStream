@@ -1,74 +1,83 @@
-# ForgeStream OSS Dashboard
+# ForgeStream
 
-ForgeStream OSS Dashboard is a Next.js maintainer dashboard for the ForgeStream Stellar Soroban toolkit. It presents repository health, smart contract modules, contribution issues, SDK references, contributors, and documentation links in a single internal interface.
+An open-source collection of reusable Soroban smart contracts and developer tooling for building secure payment workflows on the Stellar network.
 
-## Tech Stack
+ForgeStream provides modular building blocks that help developers accelerate the development of decentralized applications by offering reusable components for escrow, milestone-based payments, treasury management, and related financial workflows.
 
-- Next.js 16 with the App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- shadcn-style UI primitives
-- lucide-react icons
-- Vercel Analytics in production
+---
 
-## Getting Started
+## Why ForgeStream?
 
-Install dependencies:
+Many blockchain applications require similar payment primitives such as escrow contracts, staged fund releases, and treasury management. ForgeStream aims to reduce duplicated effort by providing well-documented, reusable, and extensible modules built with Rust and Soroban.
 
-```bash
-pnpm install
-```
+## Current Focus
 
-Run the development server:
+The project is currently focused on building:
 
-```bash
-pnpm dev
-```
+* 🔒 Escrow contracts
+* 📋 Milestone-based payment contracts
+* 💰 Treasury management utilities
+* 🛠️ Developer-friendly SDKs
+* 📚 Documentation and examples
 
-Build for production:
-
-```bash
-pnpm build
-```
-
-Start the production build:
-
-```bash
-pnpm start
-```
-
-Lint the project:
-
-```bash
-pnpm lint
-```
-
-## Project Structure
+## Repository Structure
 
 ```text
-app/                 Next.js app entry, layout, and global styles
-components/          Dashboard shell, navigation, pages, and reusable UI
-components/pages/    Feature views rendered inside the dashboard
-components/ui/       Shared UI primitives
-lib/                 Static dashboard data and utilities
-public/              Icons and static image assets
+ForgeStream/
+├── frontend/      # Maintainer dashboard and developer interface
+├── contracts/     # Soroban smart contracts written in Rust
+├── sdk/           # Client SDKs and helper libraries
+├── docs/          # Technical documentation
+├── tests/         # Contract and integration tests
+├── README.md
+├── CONTRIBUTING.md
+└── LICENSE
 ```
 
-## Dashboard Sections
+## Technology Stack
 
-- Overview: repository stats, activity, and module status summary.
-- Smart Contracts: Soroban contract descriptions, callable functions, and state variables.
-- Modules: reusable workflow modules and maintainer signals.
-- Issues: contribution board organized by issue difficulty and status.
-- SDK: JavaScript and Rust client usage examples.
-- Contributors: maintainer and contributor activity.
-- Documentation: guide and reference entry points.
+* Rust
+* Soroban SDK
+* Stellar
+* Next.js
+* TypeScript
 
-## Data Model
+## Project Status
 
-Most visible dashboard content comes from `lib/data.ts`. Update that file when changing demo statistics, contract definitions, workflow modules, issues, contributors, or activity feed entries.
+ForgeStream is under active development.
 
-## Notes
+The initial release focuses on establishing the core architecture and foundational smart contract modules while preparing the repository for community contributions.
 
-The current app is a static, client-side dashboard. Navigation is handled in `components/dashboard.tsx` with local React state, so switching sections does not change the route.
+## Roadmap
+
+* [ ] Implement Escrow Contract
+* [ ] Implement Milestone Contract
+* [ ] Add Treasury Module
+* [ ] Publish JavaScript SDK
+* [ ] Publish Rust SDK
+* [ ] Add integration tests
+* [ ] Expand technical documentation
+* [ ] Provide complete example applications
+
+## Contributing
+
+We welcome contributions from the community.
+
+Whether you're fixing bugs, improving documentation, adding tests, or implementing new features, your contributions are appreciated.
+
+To get started:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Open a pull request with a clear description.
+
+Please check open issues before starting work.
+
+## Vision
+
+Our long-term goal is to build a reliable open-source foundation of reusable Soroban components that developers can confidently use when building payment-oriented applications on Stellar.
+
+## License
+
+This project is licensed under the MIT License.
